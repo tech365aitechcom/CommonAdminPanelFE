@@ -79,6 +79,8 @@ const capitalizedCategory = category
         }
       )
       .then((res) => {
+        console.log('brands res:', res?.data?.dbList)
+        console.log('brands data:', res?.data?.data)
         setCompanies(res?.data?.dbList);
         setBrands(res?.data?.data);
         setIsLoading(false);
