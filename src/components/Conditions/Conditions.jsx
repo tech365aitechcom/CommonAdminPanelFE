@@ -562,8 +562,9 @@ const updateActiveDb = (newActiveDB) => {
                   </label>
                   <input
                     type="text"
-                    className="w-full border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-primary focus:border-primary px-4 py-2 text-sm"
+                    className="w-full border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-primary focus:border-primary px-4 py-2 text-sm"
                     value={newCondition.grade}
+                    placeholder="Enter grade"
                     onChange={(e) =>
                       setNewCondition({
                         ...newCondition,

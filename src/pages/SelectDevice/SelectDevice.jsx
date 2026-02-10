@@ -142,11 +142,12 @@ const SelectDevice = () => {
         search: searchModel,
       },
     };
-    console.log(config);
+    console.log("selectdevice config:",config);
     axios
       .request(config)
       .then((res) => {
-        console.log("asd", res?.data);
+        console.log("selectdevice data:", res?.data);
+        console.log('selectdevice models', res.data.models)
         setModelInfo(res.data.models);
         setSeriesList(res.data.seriesList);
         setIsTableLoaded(false);

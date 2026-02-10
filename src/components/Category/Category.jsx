@@ -63,6 +63,7 @@ const updateActiveDb = (newActiveDB) => {
         },
       })
       .then((res) => {
+        console.log('category res:',res?.data?.dbList)
         setCompanies(res?.data?.dbList);
         setCategories(res?.data?.data);
         setIsLoading(false);
