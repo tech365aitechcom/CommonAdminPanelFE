@@ -21,6 +21,7 @@ const downloadSheet = (apiData, downloadType) => {
       ? [
           {
             group: "",
+            groupName: "",
             quetion: "",
             yes: "",
             no: "",
@@ -38,6 +39,7 @@ const downloadSheet = (apiData, downloadType) => {
               return {
                 id: item?._id,
                 group: item?.group?.name || null,
+                groupName: item?.groupName || null,
                 quetion: item?.quetion || null,
                 yes: item?.yes || null,
                 no: item?.no || null,
@@ -48,11 +50,12 @@ const downloadSheet = (apiData, downloadType) => {
                 Newcaption: op?.caption || null,
                 Newimg: op?.img || null,
                 type: item?.type || null,
-                quick: item?.quick|| null,
+                quick: item?.quick || null,
               };
             } else {
               return {
                 group: item?.group?.name || null,
+                groupName: item?.groupName || null,
                 quetion: item?.quetion || null,
                 yes: item?.yes || null,
                 no: item?.no || null,
@@ -61,13 +64,13 @@ const downloadSheet = (apiData, downloadType) => {
                 caption: op?.caption || null,
                 img: op?.img || null,
                 type: item?.type || null,
-                quick: item?.quick|| null,
+                quick: item?.quick || null,
                 updatedat: new Date(item?.updatedAt).toLocaleDateString(
-                  "en-IN"
+                  "en-IN",
                 ),
               };
             }
-          })
+          }),
         );
 
   const wsLeadsCompleted = XLSX.utils.json_to_sheet(formattedData);
@@ -91,7 +94,7 @@ const Questions = () => {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [questions, setQuestions] = useState([]);
-    const Device = sessionStorage.getItem("DeviceType");
+  const Device = sessionStorage.getItem("DeviceType");
   const [currentQuestions, setCurrentQuestions] = useState([]);
   const fileInputRef = useRef(null);
   const [file, setFile] = useState(null);
@@ -103,7 +106,7 @@ const Questions = () => {
   const [isEditBoxOpen, setIsEditBoxOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [categories, setCategories] = useState([]);
-    const { category } = useParams();
+  const { category } = useParams();
   const [images, setImages] = useState([]);
   const [imagesBox, setImagesBox] = useState(false);
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
@@ -118,21 +121,41 @@ const Questions = () => {
       clearTimeout(handler);
     };
   }, [searchTerm]);
-    useEffect(() => {
-      if (debouncedSearchTerm) {
-        fetchQuestions();
-      }
-    }, [debouncedSearchTerm]);
-  const [newQuestion, setNewQuestion] = useState(
+  useEffect(() => {
+    if (debouncedSearchTerm) {
+      fetchQuestions();
+    }
+  }, [debouncedSearchTerm]);
+
+  const [newQuestion, setNewQuestion] = useState({
+    id: "",
+    type: category,
+    quetion: "",
+    group: "",
+    groupName: "",
+    yes: "",
+    no: "",
+    default: "",
+    viewOn: "",
+    quick: false,
+    options: [
+      {
+        img: "",
+        caption: "",
+      },
+    ],
+  });
+
+  const [newQuestions, setNewQuestions] = useState([
     {
-      id:"",
       type: category,
       quetion: "",
       group: "",
+      groupName: "",
       yes: "",
       no: "",
       default: "",
-      viewOn: "",
+      // viewOn: "",
       quick: false,
       options: [
         {
@@ -141,35 +164,20 @@ const Questions = () => {
         },
       ],
     },
-  );
-const [newQuestions, setNewQuestions] = useState([
-  {
-    type: category,
-    quetion: "",
-    group: "",
-    yes: "",
-    no: "",
-    default: "",
-    // viewOn: "",
-    quick: false,
-    options: [
-      {
-        img: "",
-        caption: "",
-      },
-    ],
-  },
-]);
-useEffect(() => {
-console.log(newQuestions)
-},[newQuestions])
+  ]);
+
+  useEffect(() => {
+    console.log(newQuestions);
+  }, [newQuestions]);
   const navigate = useNavigate();
   const userToken = sessionStorage.getItem("authToken");
-  const [activeDB, setActiveDB] = useState(sessionStorage.getItem("activeDB") || "");
+  const [activeDB, setActiveDB] = useState(
+    sessionStorage.getItem("activeDB") || "",
+  );
 
-const updateActiveDb = (newActiveDB) => {
+  const updateActiveDb = (newActiveDB) => {
     setActiveDB(newActiveDB);
-};
+  };
   useEffect(() => {
     fetchQuestions();
     getCategories();
@@ -179,20 +187,23 @@ const updateActiveDb = (newActiveDB) => {
     fetchQuestions();
   }, [category]);
 
-    const fetchGroups = async () => {
-      try {
-        setIsLoading(true);
-        const res = await axios.get(`${import.meta.env.VITE_REACT_APP_ENDPOINT}/api/group/getGroupsByCategory?category=${category}`, {
+  const fetchGroups = async () => {
+    try {
+      setIsLoading(true);
+      const res = await axios.get(
+        `${import.meta.env.VITE_REACT_APP_ENDPOINT}/api/group/getGroupsByCategory?category=${category}`,
+        {
           headers: { Authorization: userToken, activeDB },
-        });
-        setGroups(res.data.data);
-        setIsLoading(false);
-      } catch (err) {
-        console.error(err);
-        toast.error("Failed to fetch groups");
-        setIsLoading(false);
-      }
-    };
+        },
+      );
+      setGroups(res.data.data);
+      setIsLoading(false);
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to fetch groups");
+      setIsLoading(false);
+    }
+  };
 
   const fetchQuestions = () => {
     setIsLoading(true);
@@ -206,7 +217,7 @@ const updateActiveDb = (newActiveDB) => {
             Authorization: `${userToken}`,
             activeDB: activeDB,
           },
-        }
+        },
       )
       .then((res) => {
         setQuestions(res?.data?.data);
@@ -223,21 +234,29 @@ const updateActiveDb = (newActiveDB) => {
         `${import.meta.env.VITE_REACT_APP_ENDPOINT}/api/category/getAll`,
         {
           headers: { Authorization: userToken, activeDB: activeDB },
-        }
+        },
       );
       setCategories(data.data);
     } catch (err) {
       console.log(err);
     }
   };
-  //   const handleDeviceCategory = (e) => {
-  //     setCategory(e.target.value);
-  // };
+
   const handleAddQuestions = () => {
+    // Validation for Mandatory groupName
+    const isGroupNameValid = newQuestions.every(
+      (q) => q.groupName && q.groupName.trim() !== "",
+    );
+    if (!isGroupNameValid) {
+      toast.error("Group Name is mandatory for all questions.");
+      return;
+    }
+
     setIsLoading(true);
     axios
       .post(
-        `${import.meta.env.VITE_REACT_APP_ENDPOINT
+        `${
+          import.meta.env.VITE_REACT_APP_ENDPOINT
         }/api/questionnaires/createMultiple`,
         { questions: newQuestions },
         {
@@ -245,7 +264,7 @@ const updateActiveDb = (newActiveDB) => {
             Authorization: `${userToken}`,
             activeDB: activeDB,
           },
-        }
+        },
       )
       .then(() => {
         fetchQuestions();
@@ -253,14 +272,15 @@ const updateActiveDb = (newActiveDB) => {
         resetForm();
         setIsLoading(false);
       })
-      .catch((err) => console.error(err)).finally(() => {
-            setIsLoading(false);
-      })
+      .catch((err) => console.error(err))
+      .finally(() => {
+        setIsLoading(false);
+      });
   };
 
   const handleEditQuestion = () => {
     setIsLoading(true);
-    const endpoint =`${import.meta.env.VITE_REACT_APP_ENDPOINT}/api/questionnaires/edit`
+    const endpoint = `${import.meta.env.VITE_REACT_APP_ENDPOINT}/api/questionnaires/edit`;
     const method = "put";
     axios[method](endpoint, newQuestion, {
       headers: {
@@ -275,6 +295,7 @@ const updateActiveDb = (newActiveDB) => {
           type: category,
           quetion: "",
           group: "",
+          groupName: "",
           yes: "",
           no: "",
           default: "",
@@ -300,10 +321,11 @@ const updateActiveDb = (newActiveDB) => {
     setIsEditing(true);
     setCurrentQuestions(question);
     setNewQuestion({
-      id:question._id,
+      id: question._id,
       type: question.type,
       quetion: question.quetion,
       group: question.group?._id,
+      groupName: question.groupName || "",
       yes: question.yes,
       no: question.no,
       default: question.default,
@@ -315,6 +337,7 @@ const updateActiveDb = (newActiveDB) => {
           : [{ img: "", caption: "" }],
     });
   };
+
   const resetForm = () => {
     setIsPopupOpen(false);
     setIsEditBoxOpen(false);
@@ -324,6 +347,7 @@ const updateActiveDb = (newActiveDB) => {
         type: category,
         quetion: "",
         group: "",
+        groupName: "",
         yes: "",
         no: "",
         default: "",
@@ -337,24 +361,23 @@ const updateActiveDb = (newActiveDB) => {
         ],
       },
     ]);
-     setNewQuestion(
-       {
-         type: category,
-         quetion: "",
-         group: "",
-         yes: "",
-         no: "",
-         default: "",
-         viewOn: "",
-         quick: false,
-         options: [
-           {
-             img: "",
-             caption: "",
-           },
-         ],
-       },
-     );
+    setNewQuestion({
+      type: category,
+      quetion: "",
+      group: "",
+      groupName: "",
+      yes: "",
+      no: "",
+      default: "",
+      viewOn: "",
+      quick: false,
+      options: [
+        {
+          img: "",
+          caption: "",
+        },
+      ],
+    });
   };
   const handleDelete = (questionId) => {
     setIsLoading(true);
@@ -369,7 +392,7 @@ const updateActiveDb = (newActiveDB) => {
             activeDB: activeDB,
           },
           data: { id: questionId }, // Pass the data here
-        }
+        },
       )
       .then((res) => {
         fetchQuestions();
@@ -425,50 +448,50 @@ const updateActiveDb = (newActiveDB) => {
       setLoading(false);
     }
   };
-    const handleNext = (category) => {
-      navigate("/conditions/" + category);
-    };
+  const handleNext = (category) => {
+    navigate("/conditions/" + category);
+  };
   const handleImagesChange = (e) => {
     const selectedFile = e.target.files;
     // setImages(selectedFile);
     const validFiles = Array.from(selectedFile).filter(
-      (file) => file.size <= 10000000
+      (file) => file.size <= 10000000,
     );
     setImages(validFiles);
   };
- const handleImagesSubmit = async (e) => {
-   e.preventDefault();
-   const token = sessionStorage.getItem("authToken");
-setIsLoading(true);
-   try {
-     const formData = new FormData();
-     formData.append("category", Device);
-     Array.from(images).forEach((file) => formData.append("files", file));
+  const handleImagesSubmit = async (e) => {
+    e.preventDefault();
+    const token = sessionStorage.getItem("authToken");
+    setIsLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append("category", Device);
+      Array.from(images).forEach((file) => formData.append("files", file));
 
-     await axios.post(
-       `${
-         import.meta.env.VITE_REACT_APP_ENDPOINT
-       }/api/questionnaires/bulkuploadQuesImage`,
-       formData,
-       {
-         headers: {
-           "Content-Type": "multipart/form-data",
-           Authorization: `${token}`,
-           activeDB: activeDB,
-         },
-       }
-     );
-     toast.success("Images Uploaded SuccessFully");
-     fetchQuestions();
-     setImagesBox(false);
-   } catch (error) {
-     setImagesBox(false);
-setIsLoading(false);
-     console.error("Error uploading images", error);
-   } finally {
-setIsLoading(false);
-   }
- };
+      await axios.post(
+        `${
+          import.meta.env.VITE_REACT_APP_ENDPOINT
+        }/api/questionnaires/bulkuploadQuesImage`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `${token}`,
+            activeDB: activeDB,
+          },
+        },
+      );
+      toast.success("Images Uploaded SuccessFully");
+      fetchQuestions();
+      setImagesBox(false);
+    } catch (error) {
+      setImagesBox(false);
+      setIsLoading(false);
+      console.error("Error uploading images", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
   return (
     <div>
       <div className="navbar">
@@ -601,6 +624,9 @@ setIsLoading(false);
                 <div className="text-sm text-gray-600">
                   <p>
                     <strong>Group:</strong> {q?.group?.name}
+                  </p>
+                  <p>
+                    <strong>Group Name:</strong> {q?.groupName}
                   </p>
                   <p>
                     <strong>Yes:</strong> {q?.yes}
@@ -868,7 +894,7 @@ setIsLoading(false);
                     className="bg-red-500 text-white px-4 py-2 mb-2 rounded-md"
                     onClick={() => {
                       const updatedOptions = newQuestion.options.filter(
-                        (_, i) => i !== index
+                        (_, i) => i !== index,
                       );
                       setNewQuestion({
                         ...newQuestion,
@@ -926,7 +952,7 @@ setIsLoading(false);
                 </h4>
 
                 <div className="flex flex-wrap justify-between gap-6">
-                  <div className="mb-4 w-full sm:w-3/4">
+                  <div className="mb-4 w-full">
                     <label className="block text-sm font-medium mb-2">
                       Question
                     </label>
@@ -941,40 +967,81 @@ setIsLoading(false);
                       }}
                     />
                   </div>
-                  <div className="flex items-center justify-between gap-4">
-                    <div className="w-full">
-                      <label className="text-sm font-medium mb-2 mr-10">
-                        Group
-                      </label>
-                    <select
-                      className="border-2 px-4 p-2 rounded-lg w-full outline-none focus:ring-2 focus:ring-primary transition-all"
-                      value={question.group}
-                      onChange={(e) => {
-                        const updatedQuestions = [...newQuestions];
-                        updatedQuestions[qIndex].group = e.target.value;
-                        updatedQuestions[qIndex].yes = "";
-                        updatedQuestions[qIndex].no = "";
-                        updatedQuestions[qIndex].default = "";
-                        setNewQuestions(updatedQuestions);
-                      }}
-                    >
-                      <option value="" disabled>Select a Group</option>
-                      {groups.map((group) => (
-                        <option key={group._id} value={group._id}>
-                          {group.name}
-                        </option>
-                      ))}
-                    </select>
-                    </div>
-                    <button
-                      onClick={() => navigate("/groups")}
-                      className="w-full bg-primary text-white py-2 rounded-md font-medium mt-6"
+
+                  {/* Updated Section: Split Group and Group Name into two columns with correct alignment */}
+                  <div className="flex flex-col md:flex-row gap-6 w-full">
+                    {/* Left Side: Group */}
+                    <div className="flex-1 flex items-start gap-4">
+                      <div className="w-full">
+                        <label className="block text-sm font-medium mb-2">
+                          Group
+                        </label>
+                        <select
+                          className="border-2 px-4 py-2 rounded-lg w-full outline-none focus:ring-2 focus:ring-primary transition-all"
+                          value={question.group}
+                          onChange={(e) => {
+                            const updatedQuestions = [...newQuestions];
+                            updatedQuestions[qIndex].group = e.target.value;
+                            updatedQuestions[qIndex].yes = "";
+                            updatedQuestions[qIndex].no = "";
+                            updatedQuestions[qIndex].default = "";
+                            setNewQuestions(updatedQuestions);
+                          }}
+                        >
+                          <option value="" disabled>
+                            Select a Group
+                          </option>
+                          {groups.map((group) => (
+                            <option key={group._id} value={group._id}>
+                              {group.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <button
+                        onClick={() => navigate("/groups")}
+                        className="bg-primary text-white px-4 py-2 rounded-md font-medium mt-7 whitespace-nowrap"
                       >
-                      Add Group
-                    </button>
+                        Add Group
+                      </button>
+                    </div>
+
+                    {/* Right Side: Group Name */}
+                    <div className="flex-1 flex items-start gap-4">
+                      <div className="w-full">
+                        <label className="block text-sm font-medium mb-2">
+                          Group Name <span className="text-red-500">*</span>
+                        </label>
+                        <select
+                          className="border-2 px-4 py-2 rounded-lg w-full outline-none focus:ring-2 focus:ring-primary transition-all"
+                          value={question.groupName}
+                          onChange={(e) => {
+                            const updatedQuestions = [...newQuestions];
+                            updatedQuestions[qIndex].groupName = e.target.value;
+                            setNewQuestions(updatedQuestions);
+                          }}
+                        >
+                          <option value="" disabled>
+                            Select Group Name
+                          </option>
+                          {groups.map((group) => (
+                            <option key={group._id} value={group.name}>
+                              {group.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => navigate("/groups")}
+                        className="bg-primary text-white px-4 py-2 rounded-md font-medium mt-7 whitespace-nowrap"
+                      >
+                        Add Group Name
+                      </button>
                     </div>
                   </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mt-4">
                   {["yes", "no", "default"].map((field) => (
                     <div key={field}>
                       <label className="block text-sm font-medium mb-2">
@@ -1054,7 +1121,7 @@ setIsLoading(false);
                       className="bg-red-500 text-white px-4 py-2 rounded-md"
                       onClick={() => {
                         const updatedOptions = question.options.filter(
-                          (_, i) => i !== oIndex
+                          (_, i) => i !== oIndex,
                         );
                         const updatedQuestions = [...newQuestions];
                         updatedQuestions[qIndex].options = updatedOptions;
@@ -1084,7 +1151,7 @@ setIsLoading(false);
                   className="bg-red-500 text-white ml-4 px-4 py-2 rounded-md mt-4 w-full sm:w-auto"
                   onClick={() => {
                     const updatedQuestions = newQuestions.filter(
-                      (_, i) => i !== qIndex
+                      (_, i) => i !== qIndex,
                     );
                     setNewQuestions(updatedQuestions);
                   }}
@@ -1103,6 +1170,7 @@ setIsLoading(false);
                     type: category,
                     quetion: "",
                     group: "",
+                    groupName: "",
                     yes: "",
                     no: "",
                     default: "",
