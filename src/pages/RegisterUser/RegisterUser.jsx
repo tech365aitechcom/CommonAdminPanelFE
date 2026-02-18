@@ -1,102 +1,102 @@
-import React, { useEffect, useState } from "react";
-import styles from "./RegisterUser.module.css";
-import { useNavigate } from "react-router-dom";
-import AdminNavbar from "../../components/Admin_Navbar";
-import SideMenu from "../../components/SideMenu";
-import { BeatLoader } from "react-spinners";
-import axios from "axios";
-import { IoIosCheckmarkCircle, IoIosCloseCircle } from "react-icons/io";
-import { IoEye, IoEyeOffSharp } from "react-icons/io5";
+import React, { useEffect, useState } from 'react'
+import styles from './RegisterUser.module.css'
+import { useNavigate } from 'react-router-dom'
+import AdminNavbar from '../../components/Admin_Navbar'
+import SideMenu from '../../components/SideMenu'
+import { BeatLoader } from 'react-spinners'
+import axios from 'axios'
+import { IoIosCheckmarkCircle, IoIosCloseCircle } from 'react-icons/io'
+import { IoEye, IoEyeOffSharp } from 'react-icons/io5'
 
-const sucTextColor = "text-green-500";
-const failTextColor = "text-[#EC2752]";
-const role = ["Admin Manager", "Technician", "Sale User"];
+const sucTextColor = 'text-green-500'
+const failTextColor = 'text-[#EC2752]'
 
 const getStore = async () => {
-  const token1 = sessionStorage.getItem("authToken");
-  const activeDB = sessionStorage.getItem("activeDB") || "";
+  const token1 = sessionStorage.getItem('authToken')
+  const activeDB = sessionStorage.getItem('activeDB') || ''
 
   const config = {
-    method: "get",
+    method: 'get',
     url: `${
       import.meta.env.VITE_REACT_APP_ENDPOINT
     }/api/store/findAll?page=0&limit=9999`,
     headers: { Authorization: token1, activeDB: activeDB },
-  };
-  let storeNamesArray = [];
+  }
+  let storeNamesArray = []
   await axios
     .request(config)
     .then((response) => {
-      console.log(response.data.result);
+      console.log(response.data.result)
       storeNamesArray = response.data.result.map((store) => ({
         storeName: store.storeName,
         _id: store._id,
         region: store.region,
-      }));
+      }))
     })
     .catch((error) => {
-      console.log(error);
-    });
-  return storeNamesArray;
-};
-
+      console.log(error)
+    })
+  return storeNamesArray
+}
 
 const initForm = {
-  firstName: "",
-  lastName: "",
-  email: "",
-  password: "",
-  phoneNumber: "",
-  role: "",
-  storeId: "",
-  city: "",
-  address: "",
-};
+  firstName: '',
+  lastName: '',
+  email: '',
+  password: '',
+  phoneNumber: '',
+  role: '',
+  storeId: '',
+  city: '',
+  address: '',
+}
 
 const RegisterUser = () => {
-  const token = sessionStorage.getItem("authToken");
-      const [activeDB, setActiveDB] = useState(sessionStorage.getItem("activeDB") || "");
+  const token = sessionStorage.getItem('authToken')
+  const [activeDB, setActiveDB] = useState(
+    sessionStorage.getItem('activeDB') || '',
+  )
 
-const updateActiveDb = (newActiveDB) => {
-    setActiveDB(newActiveDB);
-};
-  const [sideMenu, setsideMenu] = useState(false);
-  const [isGrest, setIsGrest] = useState(null);
-  const [isTableLoaded, setIsTableLoaded] = useState(false);
-  const [errMsg, setErrMsg] = useState("");
-  const [sucBox, setSucBox] = useState(false);
-  const [failBox, setFailBox] = useState(false);
-  const [storeData, setStoreData] = useState([]);
-  const [formData, setFormData] = useState(initForm);
-  const navigate = useNavigate();
+  const updateActiveDb = (newActiveDB) => {
+    setActiveDB(newActiveDB)
+  }
+  const [sideMenu, setsideMenu] = useState(false)
+  const [isGrest, setIsGrest] = useState(null)
+  const [isTableLoaded, setIsTableLoaded] = useState(false)
+  const [errMsg, setErrMsg] = useState('')
+  const [sucBox, setSucBox] = useState(false)
+  const [failBox, setFailBox] = useState(false)
+  const [storeData, setStoreData] = useState([])
+  const [formData, setFormData] = useState(initForm)
+  const navigate = useNavigate()
 
   useEffect(() => {
     setFormData({
       ...formData,
-      grestMember: isGrest === "yes",
-    });
-  }, [isGrest]);
+      grestMember: isGrest === 'yes',
+    })
+  }, [isGrest])
 
   const saveStrCmp = async () => {
-    const tempStr = await getStore();
-    setStoreData(tempStr);
-  };
+    const tempStr = await getStore()
+    setStoreData(tempStr)
+  }
   useEffect(() => {
-    saveStrCmp();
-  }, [activeDB]);
+    saveStrCmp()
+  }, [activeDB])
 
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    const newValue = type === "checkbox" ? checked : value;
+    const { name, value, type, checked } = e.target
+    const newValue = type === 'checkbox' ? checked : value
     setFormData({
       ...formData,
       [name]: newValue,
-    });
-  };
+    })
+  }
 
   const submitHandler = (event) => {
-    event.preventDefault();
-    setIsTableLoaded(true);
+    event.preventDefault()
+    setIsTableLoaded(true)
     const data = {
       firstName: formData.firstName,
       lastName: formData.lastName,
@@ -107,48 +107,48 @@ const updateActiveDb = (newActiveDB) => {
       storeId: formData.storeId,
       city: formData.city,
       address: formData.address,
-    };
+    }
     const config = {
-      method: "post",
+      method: 'post',
       maxBodyLength: Infinity,
       url: `${
         import.meta.env.VITE_REACT_APP_ENDPOINT
       }/api/userregistry/register`,
       headers: { Authorization: token, activeDB: activeDB },
       data: data,
-    };
+    }
     axios
       .request(config)
       .then((response) => {
-        setErrMsg("Successfully added new user");
-        setSucBox(true);
-        setIsTableLoaded(false);
-        navigate("/registeruserdetails");
+        setErrMsg('Successfully added new user')
+        setSucBox(true)
+        setIsTableLoaded(false)
+        navigate('/registeruserdetails')
       })
       .catch((error) => {
-        console.log(error);
-        setErrMsg("Failed to add new user, " + error.response.data.msg);
-        setFailBox(true);
-        setIsTableLoaded(false);
-      });
-  };
+        console.log(error)
+        setErrMsg('Failed to add new user, ' + error.response.data.msg)
+        setFailBox(true)
+        setIsTableLoaded(false)
+      })
+  }
   return (
-    <div className="min-h-screen  pb-8 bg-[#F5F4F9]">
-      <div className="navbar">
+    <div className='min-h-screen  pb-8 bg-[#F5F4F9]'>
+      <div className='navbar'>
         <AdminNavbar
-        setsideMenu={setsideMenu}
-        sideMenu={sideMenu}
-        onActiveDbChange={updateActiveDb}
-    />
+          setsideMenu={setsideMenu}
+          sideMenu={sideMenu}
+          onActiveDbChange={updateActiveDb}
+        />
         <SideMenu setsideMenu={setsideMenu} sideMenu={sideMenu} />
       </div>
       {isTableLoaded && (
-        <div className="fixed top-0 left-0 z-50 flex items-center justify-center w-full h-full bg-black bg-opacity-50">
-          <BeatLoader color={"#EC2752"} loading={isTableLoaded} size={15} />
+        <div className='fixed top-0 left-0 z-50 flex items-center justify-center w-full h-full bg-black bg-opacity-50'>
+          <BeatLoader color={'#EC2752'} loading={isTableLoaded} size={15} />
         </div>
       )}
       {(sucBox || failBox) && (
-        <div className="fixed top-0 left-0 z-50 flex items-center justify-center w-full h-full bg-black bg-opacity-50">
+        <div className='fixed top-0 left-0 z-50 flex items-center justify-center w-full h-full bg-black bg-opacity-50'>
           <div
             className={`${styles.err_mod_box} ${
               sucBox ? sucTextColor : failTextColor
@@ -166,16 +166,16 @@ const updateActiveDb = (newActiveDB) => {
               />
             )}
             <h6 className={sucBox ? sucTextColor : failTextColor}>
-              {sucBox ? "Success!" : "Error!"}
+              {sucBox ? 'Success!' : 'Error!'}
             </h6>
-            <p className="text-slate-500">{errMsg}</p>
+            <p className='text-slate-500'>{errMsg}</p>
             <button
               onClick={() => {
-                setSucBox(false);
-                setFailBox(false);
+                setSucBox(false)
+                setFailBox(false)
               }}
               className={
-                sucBox ? "bg-green-500 text-white" : "text-white bg-[#EC2752]"
+                sucBox ? 'bg-green-500 text-white' : 'text-white bg-[#EC2752]'
               }
             >
               Okay
@@ -186,19 +186,19 @@ const updateActiveDb = (newActiveDB) => {
       <div
         style={{
           boxShadow:
-            "rgba(0, 0, 0, 0.3) 0px 0px 10px, rgba(0, 0, 0, 0.1) 0px 5px 12px",
+            'rgba(0, 0, 0, 0.3) 0px 0px 10px, rgba(0, 0, 0, 0.1) 0px 5px 12px',
         }}
-        className="items-center bg-white max-w-[900px] flex py-8 mx-auto mt-4 justify-center flex-col"
+        className='items-center bg-white max-w-[900px] flex py-8 mx-auto mt-4 justify-center flex-col'
       >
-        <div className="flex flex-col w-[900px]">
-          <div className="mb-6 flex flex-col gap-2 border-b-2 mr-10 pb-2 ml-10">
-            <p className="text-4xl font-bold">Register User</p>
-            <p className="text-lg">All fields marked with * are required</p>
+        <div className='flex flex-col w-[900px]'>
+          <div className='mb-6 flex flex-col gap-2 border-b-2 mr-10 pb-2 ml-10'>
+            <p className='text-4xl font-bold'>Register User</p>
+            <p className='text-lg'>All fields marked with * are required</p>
           </div>
-          <div className="flex flex-wrap gap-2 ml-10 mb-10">
+          <div className='flex flex-wrap gap-2 ml-10 mb-10'>
             <button
-              onClick={() => navigate("/registeruserdetails")}
-              className="font-medium text-sm text-white p-3 rounded bg-[#EC2752]"
+              onClick={() => navigate('/registeruserdetails')}
+              className='font-medium text-sm text-white p-3 rounded bg-[#EC2752]'
             >
               View Details
             </button>
@@ -213,179 +213,185 @@ const updateActiveDb = (newActiveDB) => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default RegisterUser;
+export default RegisterUser
 
 const UserForm = ({ formData, submitHandler, handleChange, storeData }) => {
-    const activeDB = sessionStorage.getItem("activeDB");
-    const [showUserPassword, setShowUserPassword] = useState(false);
+  const activeDB = sessionStorage.getItem('activeDB')
+  const [showUserPassword, setShowUserPassword] = useState(false)
+  const roles = (import.meta.env.VITE_REACT_APP_ROLES || '')
+    .split(',')
+    .map((r) => r.trim())
+    .filter(Boolean)
 
   return (
     <form
-      className="ml-10 flex flex-col gap-4"
+      className='ml-10 flex flex-col gap-4'
       onSubmit={submitHandler}
-      autoComplete="off"
+      autoComplete='off'
     >
-      <label className="flex flex-col w-[70%] gap-2">
-        <span className="text-xl font-medium">Company*</span>
+      <label className='flex flex-col w-[70%] gap-2'>
+        <span className='text-xl font-medium'>Company*</span>
         <input
           value={activeDB}
           contentEditable={false}
-          className="border-2 px-2 py-2 rounded-lg outline-none"
-          type="text"
+          className='border-2 px-2 py-2 rounded-lg outline-none'
+          type='text'
           required={true}
         />
       </label>
-      <label className="flex flex-col w-[70%] gap-2">
-        <span className="font-medium text-xl">First name*</span>
+      <label className='flex flex-col w-[70%] gap-2'>
+        <span className='font-medium text-xl'>First name*</span>
         <input
-          name="firstName"
-          id="firstName"
-          placeholder="Enter first name"
+          name='firstName'
+          id='firstName'
+          placeholder='Enter first name'
           value={formData.firstName}
           onChange={handleChange}
-          className="border-2 px-2 py-2 rounded-lg outline-none"
-          type="text"
+          className='border-2 px-2 py-2 rounded-lg outline-none'
+          type='text'
           required
         />
       </label>
-      <label className="flex flex-col w-[70%] gap-2">
-        <span className="font-medium text-xl">Last name</span>
+      <label className='flex flex-col w-[70%] gap-2'>
+        <span className='font-medium text-xl'>Last name</span>
         <input
-          name="lastName"
-          id="lastName"
-          placeholder="Enter last name"
+          name='lastName'
+          id='lastName'
+          placeholder='Enter last name'
           value={formData.lastName}
           onChange={handleChange}
-          className="border-2 px-2 py-2 rounded-lg outline-none"
-          type="text"
+          className='border-2 px-2 py-2 rounded-lg outline-none'
+          type='text'
         />
       </label>
-      <label className="flex flex-col w-[70%] gap-2">
-        <span className="font-medium text-xl">Email*</span>
+      <label className='flex flex-col w-[70%] gap-2'>
+        <span className='font-medium text-xl'>Email*</span>
         <input
-          name="email"
-          id="email"
+          name='email'
+          id='email'
           minLength={6}
-          placeholder="Enter your email address"
-          value={formData.email || ""}
+          placeholder='Enter your email address'
+          value={formData.email || ''}
           onChange={handleChange}
-          className="border-2 px-2 py-2 rounded-lg  outline-none "
-          type="email"
-          autoComplete="off"
+          className='border-2 px-2 py-2 rounded-lg  outline-none '
+          type='email'
+          autoComplete='off'
           required
         />
       </label>
       <div>
-        <label className="font-medium text-xl" htmlFor="password">
+        <label className='font-medium text-xl' htmlFor='password'>
           Password*
         </label>
-        <div className="flex flex-col relative input w-[70%] gap-2">
+        <div className='flex flex-col relative input w-[70%] gap-2'>
           <input
-            name="password"
-            id="password"
+            name='password'
+            id='password'
             minLength={6}
-            placeholder="Enter new password (min. 6 characters)"
-            value={formData.password || ""}
+            placeholder='Enter new password (min. 6 characters)'
+            value={formData.password || ''}
             onChange={handleChange}
-            className="border-2 px-2 py-2 rounded-lg  outline-none "
-            type={showUserPassword ? "text" : "password"}
-            autoComplete="off"
+            className='border-2 px-2 py-2 rounded-lg  outline-none '
+            type={showUserPassword ? 'text' : 'password'}
+            autoComplete='off'
             required
           />
           <span
             onClick={() => setShowUserPassword(!showUserPassword)}
-            className="absolute transform -translate-y-1/2 cursor-pointer right-2 top-6"
+            className='absolute transform -translate-y-1/2 cursor-pointer right-2 top-6'
           >
             {!showUserPassword ? <IoEyeOffSharp /> : <IoEye />}
           </span>
         </div>
       </div>
-      <label className="flex flex-col w-[70%] gap-2 ">
-        <span className="font-medium text-xl">Mobile Number*</span>
+      <label className='flex flex-col w-[70%] gap-2 '>
+        <span className='font-medium text-xl'>Mobile Number*</span>
         <input
-          name="phoneNumber"
-          id="phoneNumber"
+          name='phoneNumber'
+          id='phoneNumber'
           minLength={10}
-          placeholder="Enter 10-digit mobile number"
+          placeholder='Enter 10-digit mobile number'
           value={formData.phoneNumber}
           onChange={handleChange}
-          className="border-2 px-2 py-2 rounded-lg  outline-none"
+          className='border-2 px-2 py-2 rounded-lg  outline-none'
           maxLength={10}
-          type="tel"
+          type='tel'
           required
         />
       </label>
-      <label className="flex flex-col w-[70%] gap-2">
-        <span className="font-medium text-xl">Store Name*</span>
+      {formData.role !== 'Super Admin' && (
+        <label className='flex flex-col w-[70%] gap-2'>
+          <span className='font-medium text-xl'>Store Name*</span>
+          <select
+            name='storeId'
+            id='storeId'
+            value={formData.storeId}
+            className='outline-none text-base border-2 p-2 rounded-lg'
+            onChange={handleChange}
+            required
+          >
+            <option value=''> None </option>
+            {storeData.map((item) => (
+              <option key={item._id} value={item._id}>
+                {`${item.storeName}, ${item.region}`}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
+      <label className='flex flex-col w-[70%] gap-2'>
+        <span className='font-medium text-xl'>Role*</span>
         <select
-          name="storeId"
-          id="storeId"
-          value={formData.storeId}
-          className="outline-none text-base border-2 p-2 rounded-lg"
-          onChange={handleChange}
-          required
-        >
-          <option value=""> None </option>
-          {storeData.map((item) => (
-            <option key={item._id} value={item._id}>
-              {`${item.storeName}, ${item.region}`}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label className="flex flex-col w-[70%] gap-2">
-        <span className="font-medium text-xl">Role*</span>
-        <select
-          id="role"
-          name="role"
+          id='role'
+          name='role'
           value={formData.role}
-          className="outline-none text-base border-2 px-2 py-2 rounded-lg"
+          className='outline-none text-base border-2 px-2 py-2 rounded-lg'
           onChange={handleChange}
           required
         >
-          <option value="">None</option>
-          {role.map((item) => (
+          <option value=''>None</option>
+          {roles.map((item) => (
             <option key={item} value={item}>
               {item}
             </option>
           ))}
         </select>
       </label>
-      <label className="flex flex-col w-[70%] gap-2">
-        <span className="font-medium text-xl">City</span>
+      <label className='flex flex-col w-[70%] gap-2'>
+        <span className='font-medium text-xl'>City</span>
         <input
-          name="city"
-          id="city"
-          placeholder="Enter your city name"
+          name='city'
+          id='city'
+          placeholder='Enter your city name'
           value={formData.city}
           onChange={handleChange}
-          className="border-2 px-2 py-2 rounded-lg  outline-none"
-          type="text"
+          className='border-2 px-2 py-2 rounded-lg  outline-none'
+          type='text'
         />
       </label>
-      <label className="flex flex-col w-[70%] gap-2">
-        <span className="font-medium text-xl">Adddress</span>
+      <label className='flex flex-col w-[70%] gap-2'>
+        <span className='font-medium text-xl'>Adddress</span>
         <input
-          name="address"
-          id="address"
-          placeholder="Enter your full address"
+          name='address'
+          id='address'
+          placeholder='Enter your full address'
           value={formData.address}
           onChange={handleChange}
-          className="border-2 px-2 py-2 rounded-lg  outline-none"
-          type="text"
+          className='border-2 px-2 py-2 rounded-lg  outline-none'
+          type='text'
         />
       </label>
-      <div className="mt-8">
+      <div className='mt-8'>
         <button
-          type="submit"
-          className="font-medium text-sm text-white p-3 rounded bg-[#EC2752]"
+          type='submit'
+          className='font-medium text-sm text-white p-3 rounded bg-[#EC2752]'
         >
           Submit Form
         </button>
       </div>
     </form>
-  );
-};
+  )
+}

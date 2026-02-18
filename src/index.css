@@ -8,3 +8,7 @@
   --tertiary-color: #D7203D;
   --quaternary-color: #ff3864;
 }
+
+html, body {
+  overflow-x: hidden;
+}

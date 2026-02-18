@@ -21,7 +21,9 @@ const Login = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    sessionStorage.clear();
+    sessionStorage.removeItem('authToken');
+    sessionStorage.removeItem('profile');
+    sessionStorage.removeItem('DeviceType');
     localStorage.clear();
   }, []);
 

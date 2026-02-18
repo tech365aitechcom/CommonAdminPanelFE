@@ -5,8 +5,9 @@ import AdminNavbar from "../Admin_Navbar";
 import UniImg from "../../assets/unidb.jpeg";
 import GrestImg from "../../assets/grestdb1.jpg";
 import SwitchKartImg from "../../assets/switchkartdb.jpg";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import SideMenu from "../SideMenu";
+import { MdOutlineStarBorder, MdStar } from "react-icons/md";
 
 const CompaniesPage = () => {
   const [sideMenu, setSideMenu] = useState(false);
@@ -16,6 +17,9 @@ const CompaniesPage = () => {
   const userToken = sessionStorage.getItem("authToken");
   const [activeDB, setActiveDB] = useState(
     sessionStorage.getItem("activeDB") || ""
+  );
+  const [mainDB, setMainDB] = useState(
+    sessionStorage.getItem("mainDB") || ""
   );
   const navigate = useNavigate();
 
@@ -27,7 +31,6 @@ const CompaniesPage = () => {
     fetchStoredImages();
   }, []);
 
-  // Fetch stored images with pagination and search
   const fetchStoredImages = async () => {
     setIsLoading(true);
     try {
@@ -48,6 +51,12 @@ const CompaniesPage = () => {
     }
   };
 
+  const handleSetMainDB = (e, company) => {
+    e.stopPropagation();
+    setMainDB(company);
+    sessionStorage.setItem("mainDB", company);
+  };
+
   return (
     <div>
       <div className="navbar">
@@ -58,15 +67,13 @@ const CompaniesPage = () => {
         />
         <SideMenu setsideMenu={setSideMenu} sideMenu={sideMenu} />
       </div>
+
       {isLoading && (
         <div className="fixed top-0 left-0 z-50 flex items-center justify-center w-full h-full bg-black bg-opacity-50">
-          <BeatLoader
-            color="var(--primary-color)"
-            loading={isLoading}
-            size={15}
-          />
+          <BeatLoader color="var(--primary-color)" loading={isLoading} size={15} />
         </div>
       )}
+
       <div className="items-start flex py-8 justify-center min-h-screen bg-gray-100">
         <div className="flex flex-col w-full max-w-screen-xl px-5">
           <div className="mt-8 mx-5 text-center">
@@ -78,7 +85,6 @@ const CompaniesPage = () => {
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
               {storedDbs?.map((company, cindex) => {
-                // Map images to specific company names
                 const companyImage =
                   company === "GrestC2B"
                     ? GrestImg
@@ -86,7 +92,9 @@ const CompaniesPage = () => {
                     ? UniImg
                     : company === "Switchkart"
                     ? SwitchKartImg
-                    : null; // Default to no image if no match
+                    : null;
+
+                const isMain = mainDB === company;
 
                 return (
                   <div
@@ -96,15 +104,35 @@ const CompaniesPage = () => {
                       sessionStorage.setItem("activeDB", company);
                       navigate("/category");
                     }}
-                    className="border bg-white rounded-lg shadow-lg p-5 flex flex-col items-center transition-all duration-300 hover:scale-105 hover:shadow-2xl cursor-pointer transform"
+                    className="relative border bg-white rounded-lg shadow-lg p-5 flex flex-col items-center transition-all duration-300 hover:scale-105 hover:shadow-2xl cursor-pointer transform"
                   >
-                    {companyImage && (
-                      <img
-                        src={companyImage}
-                        alt={company}
-                        className="w-40 h-40 object-contain rounded-full shadow-md mb-4" // Changed object-fit to object-contain for no cropping
-                      />
-                    )}
+                    {/* Star button — top-right corner */}
+                    <button
+                      onClick={(e) => handleSetMainDB(e, company)}
+                      title={isMain ? "Main DB" : "Set as Main DB"}
+                      className={`
+                        absolute top-3 right-3
+                        flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full border
+                        transition-all duration-150
+                        ${isMain
+                          ? "bg-amber-50 border-amber-300 text-amber-600 cursor-default"
+                          : "bg-white border-gray-200 text-gray-400 hover:border-amber-300 hover:text-amber-500 hover:bg-amber-50"
+                        }
+                      `}
+                      disabled={isMain}
+                    >
+                      {isMain
+                        ? <MdStar size={13} className="text-amber-500" />
+                        : <MdOutlineStarBorder size={13} />
+                      }
+                      {isMain ? "Main DB" : "Set as Main"}
+                    </button>
+
+                    <img
+                      src={companyImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(company)}&size=160&background=f3f4f6&color=374151&bold=true&rounded=true`}
+                      alt={company}
+                      className="w-40 h-40 object-contain rounded-full shadow-md mb-4 mt-2"
+                    />
                     <p className="text-xl font-semibold text-gray-800">
                       {company}
                     </p>

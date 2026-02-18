@@ -1,24 +1,21 @@
-import React, { useEffect, useState } from "react";
-import { GrDocumentConfig } from "react-icons/gr";
-import { Link, useNavigate, useParams } from "react-router-dom";
-import axios from "axios";
+import React, { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import axios from 'axios'
 
 function AdminNavbar({ setsideMenu, sideMenu, onActiveDbChange }) {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
-  const handleLogout = () => {
-    sessionStorage.removeItem("authToken");
-    navigate("/");
-  };
+  const userToken = sessionStorage.getItem('authToken')
+  const activeDB = sessionStorage.getItem('activeDB') || ''
+  const profile = JSON.parse(sessionStorage.getItem('profile') || '{}')
+  const fullName = [profile.firstName, profile.lastName].filter(Boolean).join(' ') || 'User'
+  const initials = fullName.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)
 
-  const userToken = sessionStorage.getItem("authToken");
-  const activeDB = sessionStorage.getItem("activeDB") || "UnicornUAT";
-
-  const [companies, setCompanies] = useState([]);
+  const [companies, setCompanies] = useState([])
 
   useEffect(() => {
-    fetchDbs();
-  }, [activeDB]);
+    fetchDbs()
+  }, [activeDB])
 
   const fetchDbs = () => {
     axios
@@ -29,63 +26,52 @@ function AdminNavbar({ setsideMenu, sideMenu, onActiveDbChange }) {
             Authorization: `${userToken}`,
             activeDB: activeDB,
           },
-        }
+        },
       )
       .then((res) => {
-        setCompanies(res?.data?.dbList);
+        setCompanies(res?.data?.dbList)
       })
       .catch((err) => {
-        setCompanies(err?.response?.data?.dbList);
-        console.error(err);
-      });
-  };
+        setCompanies(err?.response?.data?.dbList)
+        console.error(err)
+      })
+  }
 
   return (
     <>
-      <div className="flex items-center justify-between w-full h-16 px-6 py-2 bg-white shadow-md border-b">
+      <div className='flex items-center justify-between w-full h-16 px-6 py-2 bg-white shadow-md border-b'>
         {/* Hamburger Menu */}
         <div
-          className={`flex flex-col justify-between w-[32px] h-[25px] cursor-pointer z-[100] transition-all duration-300 ease-in-out ${
-            sideMenu && "translate-x-[149px]"
-          }`}
+          className='relative flex flex-col justify-between w-[22px] h-[18px] cursor-pointer z-[40] transition-all duration-300 ease-in-out'
           onClick={() => setsideMenu(!sideMenu)}
         >
-          <span
-            className={`w-full h-[3px] bg-black origin-left transition-all duration-300 ease-in-out ${
-              sideMenu && "rotate-45"
-            }`}
-          ></span>
-          <span
-            className={`w-full h-[3px] bg-black origin-left transition-all duration-300 ease-in-out ${
-              sideMenu && "opacity-0"
-            }`}
-          ></span>
-          <span
-            className={`w-full h-[3px] bg-black origin-left transition-all duration-300 ease-in-out ${
-              sideMenu && "-rotate-45"
-            }`}
-          ></span>
+          <span className='w-full h-[2px] bg-gray-700'></span>
+          <span className='w-full h-[2px] bg-gray-700'></span>
+          <span className='w-full h-[2px] bg-gray-700'></span>
         </div>
 
         {/* Logo and Database Selector */}
-        <div className="flex items-center gap-6">
+        <div className='flex items-center gap-6'>
           {/* Logo */}
           {/* Active DB */}
-          <div className="cursor-pointer text-sm font-semibold text-gray-700 p-3 rounded-md bg-gray-50 hover:bg-gray-100 transition-all duration-300" onClick={() =>navigate("/companies")}>
+          <div
+            className='cursor-pointer text-sm font-semibold text-gray-700 p-3 rounded-md bg-gray-50 hover:bg-gray-100 transition-all duration-300'
+            onClick={() => navigate('/companies')}
+          >
             {activeDB}
           </div>
         </div>
 
-        {/* Logout Button */}
-        <div
-          className="flex items-center justify-center bg-red-500 hover:bg-red-600 text-white text-sm font-medium py-2 px-4 rounded-md cursor-pointer transition-all duration-300"
-          onClick={handleLogout}
-        >
-          Logout
+        {/* Profile */}
+        <div className='flex items-center gap-2'>
+          <div className='w-8 h-8 rounded-full bg-[#EC2752] flex items-center justify-center text-white text-xs font-bold flex-shrink-0'>
+            {initials}
+          </div>
+          <span className='text-sm font-medium text-gray-700 hidden sm:block'>{fullName}</span>
         </div>
       </div>
     </>
-  );
+  )
 }
 
-export default AdminNavbar;
+export default AdminNavbar
