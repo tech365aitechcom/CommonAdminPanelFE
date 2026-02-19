@@ -66,7 +66,7 @@ const GradePricingSheet = () => {
   const [searchValue, setSearchValue] = useState('')
   const [uploadBox, setUploadBox] = useState(false)
   const [imagesBox, setImagesBox] = useState(false)
-  const [deviceCategory, setDeviceCategory] = useState('CTG1')
+  const [deviceCategory, setDeviceCategory] = useState('')
   const [file, setFile] = useState(null)
   const [images, setImages] = useState([])
   const [categories, setCategories] = useState([])
@@ -145,6 +145,9 @@ const GradePricingSheet = () => {
         },
       )
       setCategories(data.data)
+      if (data.data?.length > 0) {
+        setDeviceCategory(data.data[0].categoryCode)
+      }
     } catch (err) {
       console.log(err)
     }
@@ -616,6 +619,7 @@ const GradePricingSheetSub = ({
             name=''
             id=''
             className='bg-primary text-white rounded-lg outline-none px-2 py-1'
+            value={deviceCategory}
             onChange={handleDeviceCategory}
           >
             {categories.map((cat) => (
